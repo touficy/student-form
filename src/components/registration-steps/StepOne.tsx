@@ -2,11 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon } from "lucide-react";
-import { format, differenceInYears } from "date-fns";
-import { cn } from "@/lib/utils";
+import { differenceInYears } from "date-fns";
 import { StudentFormData } from "../StudentRegistrationForm";
 import { useToast } from "@/hooks/use-toast";
 
@@ -119,35 +115,18 @@ export const StepOne = ({ formData, updateFormData, onNext }: StepOneProps) => {
       </div>
 
       <div className="space-y-2">
-        <Label>Date of Birth *</Label>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              className={cn(
-                "w-full justify-start text-left font-normal",
-                !formData.dateOfBirth && "text-muted-foreground"
-              )}
-            >
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {formData.dateOfBirth ? (
-                format(formData.dateOfBirth, "PPP")
-              ) : (
-                <span>Pick a date</span>
-              )}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              mode="single"
-              selected={formData.dateOfBirth}
-              onSelect={(date) => updateFormData({ dateOfBirth: date })}
-              disabled={(date) => date > new Date()}
-              initialFocus
-              className="pointer-events-auto"
-            />
-          </PopoverContent>
-        </Popover>
+        <Label htmlFor="dateOfBirth">Date of Birth *</Label>
+        <Input
+          id="dateOfBirth"
+          type="date"
+          value={formData.dateOfBirth ? formData.dateOfBirth.toISOString().split('T')[0] : ''}
+          onChange={(e) => {
+            const date = e.target.value ? new Date(e.target.value) : undefined;
+            updateFormData({ dateOfBirth: date });
+          }}
+          max={new Date().toISOString().split('T')[0]}
+          className="w-full"
+        />
       </div>
 
       <div className="space-y-2">
