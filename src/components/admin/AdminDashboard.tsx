@@ -6,20 +6,21 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { StudentTable } from "./StudentTable";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Student {
-  id: number;
-  firstName: string;
-  lastName: string;
+  id: string;
+  first_name: string;
+  last_name: string;
   email: string;
   mobile: string;
   gender: string;
-  dateOfBirth: string;
-  bloodGroup: string;
-  motherMobile: string;
-  motherOccupation: string;
-  submittedAt: string;
-  gradeLevel?: string; // Mock field since it's not in our form
+  date_of_birth: string;
+  blood_group: string;
+  mother_mobile: string;
+  mother_occupation: string;
+  created_at: string;
+  gradeLevel?: string; // Mock field generated from age
 }
 
 interface AdminDashboardProps {
@@ -36,16 +37,30 @@ export const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
   const recordsPerPage = 10;
 
   useEffect(() => {
-    // Load students from localStorage
-    const storedStudents = localStorage.getItem('students');
-    if (storedStudents) {
-      const parsedStudents = JSON.parse(storedStudents).map((student: any, index: number) => ({
-        ...student,
-        // Mock grade level based on age for demo purposes
-        gradeLevel: generateMockGradeLevel(student.dateOfBirth),
-      }));
-      setStudents(parsedStudents);
-    }
+    const loadStudents = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('students')
+          .select('*')
+          .order('created_at', { ascending: false });
+          
+        if (error) {
+          throw error;
+        }
+        
+        const studentsWithGrades = (data || []).map((student: any) => ({
+          ...student,
+          gradeLevel: generateMockGradeLevel(student.date_of_birth),
+        }));
+        
+        setStudents(studentsWithGrades);
+      } catch (error) {
+        console.error('Error loading students:', error);
+        setStudents([]);
+      }
+    };
+
+    loadStudents();
   }, []);
 
   const generateMockGradeLevel = (dateOfBirth: string) => {
@@ -65,11 +80,11 @@ export const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
   const filteredStudents = useMemo(() => {
     return students.filter(student => {
       const matchesSearch = 
-        `${student.firstName} ${student.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        `${student.first_name} ${student.last_name}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
         student.email.toLowerCase().includes(searchTerm.toLowerCase());
       
       const matchesGrade = gradeFilter === "all" || student.gradeLevel === gradeFilter;
-      const matchesBloodGroup = bloodGroupFilter === "all" || student.bloodGroup === bloodGroupFilter;
+      const matchesBloodGroup = bloodGroupFilter === "all" || student.blood_group === bloodGroupFilter;
       
       return matchesSearch && matchesGrade && matchesBloodGroup;
     });
@@ -82,7 +97,7 @@ export const AdminDashboard = ({ onLogout }: AdminDashboardProps) => {
 
   // Get unique values for filters
   const uniqueGradeLevels = [...new Set(students.map(s => s.gradeLevel))].filter(Boolean);
-  const uniqueBloodGroups = [...new Set(students.map(s => s.bloodGroup))].filter(Boolean);
+  const uniqueBloodGroups = [...new Set(students.map(s => s.blood_group))].filter(Boolean);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 to-accent/10">

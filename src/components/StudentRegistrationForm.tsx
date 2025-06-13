@@ -7,6 +7,7 @@ import { StepTwo } from "./registration-steps/StepTwo";
 import { StepThree } from "./registration-steps/StepThree";
 import { SuccessMessage } from "./registration-steps/SuccessMessage";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface StudentFormData {
   // Step 1 - Demographics
@@ -74,31 +75,64 @@ export const StudentRegistrationForm = () => {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     try {
-      // Store in localStorage (simulating file storage)
-      const existingData = localStorage.getItem('students');
-      const students = existingData ? JSON.parse(existingData) : [];
+      let profileImageUrl = null;
       
-      const studentData = {
-        ...formData,
-        id: Date.now(),
-        submittedAt: new Date().toISOString(),
-        profileImageName: formData.profileImage?.name || null,
-      };
+      // Upload profile image if provided
+      if (formData.profileImage) {
+        const fileExt = formData.profileImage.name.split('.').pop();
+        const fileName = `${Date.now()}.${fileExt}`;
+        
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('student-profiles')
+          .upload(fileName, formData.profileImage);
+          
+        if (uploadError) {
+          throw new Error('Failed to upload profile image');
+        }
+        
+        const { data: urlData } = supabase.storage
+          .from('student-profiles')
+          .getPublicUrl(fileName);
+          
+        profileImageUrl = urlData.publicUrl;
+      }
       
-      students.push(studentData);
-      localStorage.setItem('students', JSON.stringify(students, null, 2));
+      // Save student data to Supabase
+      const { error } = await supabase
+        .from('students')
+        .insert({
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          gender: formData.gender,
+          date_of_birth: formData.dateOfBirth?.toISOString().split('T')[0],
+          email: formData.email,
+          mobile: formData.mobile,
+          profile_image_url: profileImageUrl,
+          blood_group: formData.bloodGroup,
+          allergies: formData.allergies || null,
+          medications: formData.medications || null,
+          mother_name: formData.motherName || null,
+          mother_mobile: formData.motherMobile,
+          mother_occupation: formData.motherOccupation,
+          father_name: formData.fatherName || null,
+          father_mobile: formData.fatherMobile || null,
+        });
+      
+      if (error) {
+        throw error;
+      }
       
       setIsSubmitted(true);
       toast({
         title: "Registration Successful",
         description: "Your registration has been submitted successfully.",
       });
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "There was an error submitting your registration. Please try again.",
+        description: error.message || "There was an error submitting your registration. Please try again.",
         variant: "destructive",
       });
     }

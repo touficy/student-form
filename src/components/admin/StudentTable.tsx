@@ -5,18 +5,18 @@ import { Badge } from "@/components/ui/badge";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface Student {
-  id: number;
-  firstName: string;
-  lastName: string;
+  id: string;
+  first_name: string;
+  last_name: string;
   email: string;
   mobile: string;
   gender: string;
-  dateOfBirth: string;
-  bloodGroup: string;
-  motherMobile: string;
-  motherOccupation: string;
+  date_of_birth: string;
+  blood_group: string;
+  mother_mobile: string;
+  mother_occupation: string;
   gradeLevel?: string;
-  submittedAt: string;
+  created_at: string;
 }
 
 interface StudentTableProps {
@@ -87,7 +87,7 @@ export const StudentTable = ({
                 students.map((student) => (
                   <TableRow key={student.id}>
                     <TableCell className="font-medium">
-                      {student.firstName} {student.lastName}
+                      {student.first_name} {student.last_name}
                     </TableCell>
                     <TableCell>{student.email}</TableCell>
                     <TableCell>{student.mobile}</TableCell>
@@ -102,13 +102,13 @@ export const StudentTable = ({
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge className={getBloodGroupColor(student.bloodGroup)} variant="secondary">
-                        {student.bloodGroup}
+                      <Badge className={getBloodGroupColor(student.blood_group)} variant="secondary">
+                        {student.blood_group}
                       </Badge>
                     </TableCell>
-                    <TableCell>{student.motherMobile}</TableCell>
+                    <TableCell>{student.mother_mobile}</TableCell>
                     <TableCell>
-                      {new Date(student.submittedAt).toLocaleDateString()}
+                      {new Date(student.created_at).toLocaleDateString()}
                     </TableCell>
                   </TableRow>
                 ))
