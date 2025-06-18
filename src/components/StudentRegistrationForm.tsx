@@ -8,6 +8,7 @@ import { StepThree } from "./registration-steps/StepThree";
 import { SuccessMessage } from "./registration-steps/SuccessMessage";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { format } from "date-fns";
 
 export interface StudentFormData {
   // Step 1 - Demographics
@@ -106,7 +107,7 @@ export const StudentRegistrationForm = () => {
           first_name: formData.firstName,
           last_name: formData.lastName,
           gender: formData.gender,
-          date_of_birth: formData.dateOfBirth?.toISOString().split('T')[0],
+          date_of_birth: formData.dateOfBirth ? format(formData.dateOfBirth, 'yyyy-MM-dd') : null,
           email: formData.email,
           mobile: formData.mobile,
           profile_image_url: profileImageUrl,

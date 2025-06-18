@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { differenceInYears } from "date-fns";
+import { differenceInYears, format } from "date-fns";
 import { StudentFormData } from "../StudentRegistrationForm";
 import { useToast } from "@/hooks/use-toast";
 
@@ -119,12 +119,12 @@ export const StepOne = ({ formData, updateFormData, onNext }: StepOneProps) => {
         <Input
           id="dateOfBirth"
           type="date"
-          value={formData.dateOfBirth ? formData.dateOfBirth.toISOString().split('T')[0] : ''}
+          value={formData.dateOfBirth ? format(formData.dateOfBirth, 'yyyy-MM-dd') : ''}
           onChange={(e) => {
             const date = e.target.value ? new Date(e.target.value) : undefined;
             updateFormData({ dateOfBirth: date });
           }}
-          max={new Date().toISOString().split('T')[0]}
+          max={format(new Date(), 'yyyy-MM-dd')}
           className="w-full"
         />
       </div>
